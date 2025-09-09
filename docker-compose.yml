@@ -1,0 +1,47 @@
+version: '3.9'
+services:
+  botpress:
+    image: botpress/server:latest
+    container_name: botpress
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # Studio / Admin
+      - "4000:4000"   # Realtime / API (if enabled)
+    environment:
+      - BP_PRODUCTION=false
+      - BP_PORT=3000
+      - DATABASE_URL=sqlite://data/storage.db
+      - CLUSTER_ENABLED=false
+    volumes:
+      - ./backend/botpress-data:/botpress/data
+    networks:
+      - bpnet
+
+  backend:
+    build: ./backend
+    container_name: campus-chat-backend
+    restart: unless-stopped
+    environment:
+      - PORT=8080
+      - BOTPRESS_URL=http://botpress:3000
+      - BOTPRESS_BOT_ID=campus-bot
+      - FALLBACK_CONFIDENCE=0.5
+  # Optional: set these if QnA endpoints require auth or workspace scoping
+  # - BOTPRESS_TOKEN=REPLACE_WITH_TOKEN
+  # - WORKSPACE_ID=default
+  # Force local in-memory QnA (skip Botpress import)
+      - USE_LOCAL_QNA=1
+    # Optional explicit publish endpoint if autodetect fails
+    # - PUBLISH_PATH=/api/v1/bots/:botId/mod/channel-web/publish
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - botpress
+    ports:
+      - "8080:8080"
+    networks:
+      - bpnet
+
+networks:
+  bpnet:
+    driver: bridge
