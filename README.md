@@ -102,4 +102,3 @@ Include script tag:
 See "Next Steps" section (to be expanded).
 
 ---
-Hackathon Ready ✅
